@@ -1,0 +1,68 @@
+name: CloudFormation Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
+      bucket_name:
+        description: 'S3 Bucket Name (must be globally unique)'
+        required: true
+        type: string
+      aws_region:
+        description: 'AWS Region'
+        required: true
+        type: string
+        default: 'us-east-1'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  cloudformation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Apply CloudFormation Stack
+        if: inputs.action == 'apply'
+        run: |
+          aws cloudformation deploy \
+            --template-file iac-scans/s3.yaml \
+            --stack-name public-s3-bucket-stack \
+            --parameter-overrides BucketName=${{ inputs.bucket_name }} \
+            --region ${{ inputs.aws_region }} \
+            --no-fail-on-empty-changeset
+
+      - name: Destroy CloudFormation Stack
+        if: inputs.action == 'destroy'
+        run: |
+          aws cloudformation delete-stack \
+            --stack-name public-s3-bucket-stack \
+            --region ${{ inputs.aws_region }}
+          
+          aws cloudformation wait stack-delete-complete \
+            --stack-name public-s3-bucket-stack \
+            --region ${{ inputs.aws_region }}
+
+      - name: Output Results
+        if: inputs.action == 'apply'
+        run: |
+          aws cloudformation describe-stacks \
+            --stack-name public-s3-bucket-stack \
+            --region ${{ inputs.aws_region }} \
+            --query 'Stacks[0].Outputs' \
+            --output table
