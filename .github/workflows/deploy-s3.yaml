@@ -1,4 +1,4 @@
-name: CloudFormation Deploy
+name: Deploy S3 bucket
 
 on:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
         if: inputs.action == 'apply'
         run: |
           aws cloudformation deploy \
-            --template-file ./iac-scans/s3.yaml \
+            --template-file ../iac-scans/s3.yaml \
             --stack-name public-s3-bucket-stack \
             --parameter-overrides BucketName=${{ inputs.bucket_name }} \
             --region ${{ inputs.aws_region }} \
