@@ -18,7 +18,7 @@ on:
         description: 'AWS Region'
         required: true
         type: string
-        default: 'us-east-1'
+        default: 'us-west-2'
 
 permissions:
   id-token: write
