@@ -1,0 +1,38 @@
+name: FCS Image Scanning with Enforcement
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./image-scan
+          file: ./image-scan/Dockerfile
+          tags: crwd/ubuntuweb:latest
+          push: false
+          load: true
+
+      - name: Scan Container Image
+        uses: crowdstrike/fcs-action@v4.0.0
+        with:
+          falcon_client_id: ${{ vars.FALCON_CLIENT_ID }}
+          falcon_region: 'us-1'
+          scan_type: image
+          image: crwd/ubuntuweb:latest
+          upload_results: true
+        env:
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+
+      - name: Verify image was built
+        run: |
+          docker images | grep crwd/ubuntuweb
