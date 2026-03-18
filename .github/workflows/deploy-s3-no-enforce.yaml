@@ -1,4 +1,4 @@
-name: Deploy S3 bucket
+name: Deploy S3 bucket without IAC scan enforcement
 
 on:
   workflow_dispatch:
@@ -45,14 +45,14 @@ jobs:
           FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
 
       - name: Configure AWS Credentials
-        if: inputs.action == 'apply' && steps.fcs.outputs.exit-code == '0'
+        if: inputs.action == 'apply'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ inputs.aws_region }}
 
       - name: Apply CloudFormation Stack
-        if: inputs.action == 'apply' && steps.fcs.outputs.exit-code == '0'
+        if: inputs.action == 'apply'
         run: |
           aws cloudformation deploy \
             --template-file ./iac-scan/s3.yaml \
@@ -73,7 +73,7 @@ jobs:
             --region ${{ inputs.aws_region }}
 
       - name: Output Results
-        if: inputs.action == 'apply' && steps.fcs.outputs.exit-code == '0'
+        if: inputs.action == 'apply'
         run: |
           aws cloudformation describe-stacks \
             --stack-name public-s3-bucket-stack \
