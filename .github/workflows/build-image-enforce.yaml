@@ -29,6 +29,8 @@ jobs:
           falcon_region: 'us-1'
           scan_type: image
           image: crwd/ubuntuweb:latest
+          output_path: './image-scan-results.json'
+          report_formats: json          
           upload_results: true
         env:
           FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
