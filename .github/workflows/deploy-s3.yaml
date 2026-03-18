@@ -31,6 +31,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Run FCS IaC Scan
+        if: inputs.action == 'apply'
+        uses: crowdstrike/fcs-action@v4.0.0
+        with:
+          falcon_client_id: ${{ vars.FALCON_CLIENT_ID }}
+          falcon_region: 'us-1'
+          path: './iac-scan'
+          fail_on: 'critical=1,high=1,medium=1,informational=1'
+        env:
+          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
