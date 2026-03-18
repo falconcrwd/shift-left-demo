@@ -32,6 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run FCS IaC Scan
+        id: fcs
         if: inputs.action == 'apply'
         uses: crowdstrike/fcs-action@v4.0.0
         with:
@@ -39,17 +40,19 @@ jobs:
           falcon_region: 'us-1'
           path: './iac-scan'
           fail_on: 'critical=1,high=1,medium=1,informational=1'
+          upload_results: true
         env:
           FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
 
       - name: Configure AWS Credentials
+        if: inputs.action == 'apply' && steps.fcs.outputs.exit-code == '0'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ inputs.aws_region }}
 
       - name: Apply CloudFormation Stack
-        if: inputs.action == 'apply'
+        if: inputs.action == 'apply' && steps.fcs.outputs.exit-code == '0'
         run: |
           aws cloudformation deploy \
             --template-file ./iac-scan/s3.yaml \
@@ -70,7 +73,7 @@ jobs:
             --region ${{ inputs.aws_region }}
 
       - name: Output Results
-        if: inputs.action == 'apply'
+        if: inputs.action == 'apply' && steps.fcs.outputs.exit-code == '0'
         run: |
           aws cloudformation describe-stacks \
             --stack-name public-s3-bucket-stack \
