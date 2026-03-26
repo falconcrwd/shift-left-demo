@@ -22,18 +22,23 @@ jobs:
           push: false
           load: true
 
-      - name: Scan Container Image
-        uses: crowdstrike/fcs-action@v4.0.0
-        with:
-          falcon_client_id: ${{ vars.FALCON_CLIENT_ID }}
-          falcon_region: 'us-1'
-          scan_type: image
-          image: crwd/ubuntuweb:latest
-          output_path: './image-scan-results.json'
-          report_formats: json          
-          upload_results: true
+      - name: Download and Setup FCS CLI
+        id: fcs-setup
         env:
-          FALCON_CLIENT_SECRET: ${{ secrets.FALCON_CLIENT_SECRET }}
+          FCS_CLIENT_ID: ${{ vars.FCS_CLIENT_ID }}
+          FCS_CLIENT_SECRET: ${{ secrets.FCS_CLIENT_SECRET }}
+          FALCON_REGION: ${{ vars.FALCON_REGION }}
+          FCS_BIN_PATH: /home/runner/.local/bin/fcs        
+        run: |
+          chmod +x ./fcs_download_standalone.sh
+          ./fcs_download_standalone.sh
+
+      - name: Run FCS Image Scan
+        id: fcs
+        run: |
+          export FCS_EXIT_CODE=0
+          /home/runner/.local/bin/fcs/fcs scan image crwd/ubuntuweb:latest --output ./image-scan-results.json --format json --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
+          echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
 
       - name: Verify image was built
         run: |
