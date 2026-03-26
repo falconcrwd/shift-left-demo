@@ -42,6 +42,11 @@ jobs:
       - name: Download and Setup FCS CLI
         id: fcs-setup
         if: inputs.action == 'apply'
+        env:
+          FCS_CLIENT_ID: ${{ vars.FCS_CLIENT_ID }}
+          FCS_CLIENT_SECRET: ${{ secrets.FCS_CLIENT_SECRET }}
+          FALCON_REGION: ${{ vars.FALCON_REGION }}
+          FCS_BIN_PATH: /home/runner/.local/bin/fcs        
         run: |
           chmod +x ./fcs_download_standalone.sh
           ./fcs_download_standalone.sh
