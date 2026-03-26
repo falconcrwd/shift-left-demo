@@ -46,11 +46,11 @@ jobs:
           FCS_CLIENT_ID: ${{ vars.FCS_CLIENT_ID }}
           FCS_CLIENT_SECRET: ${{ secrets.FCS_CLIENT_SECRET }}
           FALCON_REGION: ${{ vars.FALCON_REGION }}
-          FCS_BIN_PATH: ${{ env.RUNNER_TEMP }}/fcs-bin
+          FCS_BIN_PATH: ${{ env.RUNNER_TEMP }}
         run: |
           chmod +x ./fcs_download_standalone.sh
           ./fcs_download_standalone.sh
-          echo "FCS_PATH=${{ env.RUNNER_TEMP }}/fcs-bin/fcs" >> $GITHUB_ENV
+          echo "FCS_PATH=${{ env.RUNNER_TEMP }}/fcs" >> $GITHUB_ENV
 
       - name: Run FCS IaC Scan
         id: fcs
