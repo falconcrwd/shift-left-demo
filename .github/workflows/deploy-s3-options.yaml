@@ -46,18 +46,17 @@ jobs:
           FCS_CLIENT_ID: ${{ vars.FCS_CLIENT_ID }}
           FCS_CLIENT_SECRET: ${{ secrets.FCS_CLIENT_SECRET }}
           FALCON_REGION: ${{ vars.FALCON_REGION }}
-          FCS_BIN_PATH: ${{ env.RUNNER_TEMP }}
+          FCS_BIN_PATH: /home/runner/.local/bin/fcs
         run: |
           chmod +x ./fcs_download_standalone.sh
           ./fcs_download_standalone.sh
-          echo "FCS_PATH=${{ env.RUNNER_TEMP }}/fcs" >> $GITHUB_ENV
 
       - name: Run FCS IaC Scan
         id: fcs
         if: inputs.action == 'apply'
         run: |
           export FCS_EXIT_CODE=0
-          ${{ env.FCS_PATH }} --path ./iac-scan --fail-on critical=1,high=1,medium=1,informational=1 --output-path ./ --policy-rule local --upload-results --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
+          /home/runner/.local/bin/fcs --path ./iac-scan --fail-on critical=1,high=1,medium=1,informational=1 --output-path ./ --policy-rule local --upload-results --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
           echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
           exit $FCS_EXIT_CODE
 
