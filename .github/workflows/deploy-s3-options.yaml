@@ -58,7 +58,6 @@ jobs:
           export FCS_EXIT_CODE=0
           /home/runner/.local/bin/fcs/fcs scan iac --path ./iac-scan --fail-on "critical=1,high=1,medium=1,informational=1" --output-path ./ --policy-rule local --upload-results --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
           echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
-          exit $FCS_EXIT_CODE
 
       - name: FCS Scan Failure - Block Deployment
         if: |
