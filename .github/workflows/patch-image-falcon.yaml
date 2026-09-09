@@ -56,7 +56,6 @@ jobs:
             --target-image-uri "$DST_IMAGE_REPO":"$DST_TAG" \
             --falcon-image-uri "$CONTAINER_SENSOR_REPO":"$SENSOR_TAG" \
             --cid "$FALCON_CID" \
-            --falconctl-opts "--tags='jwong08-ecs'" \
             --image-pull-policy "Always"
 
       - name: Push patched image to ECR
