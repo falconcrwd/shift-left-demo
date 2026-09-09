@@ -1,0 +1,68 @@
+name: Patch application image with Falcon
+
+on:
+  workflow_dispatch:
+    inputs:
+      dst_tag:
+        description: 'Tag for the patched (destination) image'
+        required: false
+        type: string
+        default: '1.0'
+      sensor_tag:
+        description: 'Falcon container sensor image tag'
+        required: false
+        type: string
+        default: '8.10.0-8002'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-west-2
+      SRC_IMAGE_REPO: ${{ vars.SRC_IMAGE_REPO }}
+      SRC_TAG: ${{ vars.SRC_TAG }}
+      DST_IMAGE_REPO: ${{ vars.DST_IMAGE_REPO }}
+      DST_TAG: ${{ inputs.dst_tag }}
+      CONTAINER_SENSOR_REPO: ${{ vars.CONTAINER_SENSOR_REPO }}
+      SENSOR_TAG: ${{ inputs.sensor_tag }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6.2.4
+        with:
+          role-to-assume: ${{ secrets.ECR_AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Pull Falcon container sensor image
+        run: |
+          docker pull "$CONTAINER_SENSOR_REPO":"$SENSOR_TAG"
+
+      - name: Patch application image with Falcon container sensor
+        env:
+          FALCON_CID: ${{ secrets.FALCON_CID }}
+        run: |
+          docker run --user 0:0 \
+            -v ${HOME}/.docker/config.json:/root/.docker/config.json \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            --rm "$CONTAINER_SENSOR_REPO":"$SENSOR_TAG" \
+            falconutil patch-image ecsfargate \
+            --source-image-uri "$SRC_IMAGE_REPO":"$SRC_TAG" \
+            --target-image-uri "$DST_IMAGE_REPO":"$DST_TAG" \
+            --falcon-image-uri "$CONTAINER_SENSOR_REPO":"$SENSOR_TAG" \
+            --cid "$FALCON_CID" \
+            --falconctl-opts "--tags='jwong08-ecs'" \
+            --image-pull-policy "Always"
+
+      - name: Push patched image to ECR
+        run: |
+          docker push "$DST_IMAGE_REPO":"$DST_TAG"
+
+      - name: Output patched image URI
+        run: |
+          echo "Patched image pushed to: $DST_IMAGE_REPO:$DST_TAG"
