@@ -51,7 +51,7 @@ jobs:
             -v ${HOME}/.docker/config.json:/root/.docker/config.json \
             -v /var/run/docker.sock:/var/run/docker.sock \
             --rm "$CONTAINER_SENSOR_REPO":"$SENSOR_TAG" \
-            falconutil patch-image ecsfargate \
+            falconutil patch-image \
             --source-image-uri "$SRC_IMAGE_REPO":"$SRC_TAG" \
             --target-image-uri "$DST_IMAGE_REPO":"$DST_TAG" \
             --falcon-image-uri "$CONTAINER_SENSOR_REPO":"$SENSOR_TAG" \
