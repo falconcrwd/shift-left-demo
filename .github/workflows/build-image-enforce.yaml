@@ -40,6 +40,15 @@ jobs:
           /home/runner/.local/bin/fcs/fcs scan image crwd/ubuntuweb:latest --output ./image-scan-results.json --format json --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
           echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
 
+      - name: Upload image scan results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: image-scan-results
+          path: ./image-scan-results.json
+          if-no-files-found: warn
+          retention-days: 3
+
       - name: Verify image was built
         run: |
           docker images | grep crwd/ubuntuweb
