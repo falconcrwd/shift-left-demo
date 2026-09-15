@@ -8,13 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e #v4.3.0
 
       - name: Build Docker image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a #v7.3.0
         with:
           context: ./image-scan
           file: ./image-scan/Dockerfile
@@ -37,15 +37,15 @@ jobs:
         id: fcs
         run: |
           export FCS_EXIT_CODE=0
-          /home/runner/.local/bin/fcs/fcs scan image crwd/ubuntuweb:latest --output ./image-scan-results.json --format json --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
+          /home/runner/.local/bin/fcs/fcs scan image crwd/ubuntuweb:latest --output ./image-scan-results.sarif --format sarif --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
           echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
 
       - name: Upload image scan results
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: image-scan-results
-          path: ./image-scan-results.json
+          path: ./image-scan-results.sarif
           if-no-files-found: warn
           retention-days: 3
 
