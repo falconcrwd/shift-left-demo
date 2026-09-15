@@ -54,7 +54,7 @@ jobs:
         if: always()
         with:
           sarif_file: ./image-scan-results.sarif
-          category: "fcs_iac_scanning"
+          category: "fcs_image_scanning"
 
       - name: Verify image was built
         run: |
