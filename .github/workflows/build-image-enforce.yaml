@@ -3,6 +3,9 @@ name: FCS Image Scanning with Enforcement
 on:
   workflow_dispatch:
 
+permissions:
+  security-events: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
