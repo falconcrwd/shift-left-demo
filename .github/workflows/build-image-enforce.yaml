@@ -49,6 +49,13 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
+      - name: Upload SARIF report to GitHub Code scanning
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 #v4.38.0
+        if: always()
+        with:
+          sarif_file: ./image-scan-results.sarif
+          category: "fcs_image_scanning"
+
       - name: Verify image was built
         run: |
           docker images | grep crwd/ubuntuweb
