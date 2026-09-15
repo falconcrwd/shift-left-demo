@@ -57,7 +57,7 @@ jobs:
         if: inputs.action == 'apply'
         run: |
           export FCS_EXIT_CODE=0
-          /home/runner/.local/bin/fcs/fcs scan iac --path ./iac-scan --fail-on "critical=1,high=1,medium=1,informational=1" --output-path ./iac-scan-results.sarif --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
+          /home/runner/.local/bin/fcs/fcs scan iac --path ./iac-scan --fail-on "critical=1,high=1,medium=1,informational=1" --report-formats "sarif" --output-path ./iac-scan-results.sarif --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
           echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
 
       - name: Upload IaC scan results
@@ -69,12 +69,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 3
 
-      - name: Upload SARIF report to GitHub Code scanning
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 #v4.38.0
-        if: always()
-        with:
-          sarif_file: ./iac-scan-results.sarif
-          category: "fcs_iac_scanning"
+      # - name: Upload SARIF report to GitHub Code scanning
+      #   uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 #v4.38.0
+      #   if: always()
+      #   with:
+      #     sarif_file: ./iac-scan-results.sarif
+      #     category: "fcs_iac_scanning"
 
       - name: FCS Scan Failure - Block Deployment
         if: |
