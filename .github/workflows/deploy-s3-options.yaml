@@ -31,7 +31,7 @@ on:
 permissions:
   id-token: write
   contents: read
-  security-events: write
+  # security-events: write
 
 jobs:
   cloudformation:
