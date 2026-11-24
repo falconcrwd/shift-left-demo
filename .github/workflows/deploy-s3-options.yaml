@@ -1,4 +1,4 @@
-name: Deploy S3 bucket with IAC scan enforcement
+name: FCS IaC Scanning for Cloudformation S3 bucket
 
 on:
   workflow_dispatch:
