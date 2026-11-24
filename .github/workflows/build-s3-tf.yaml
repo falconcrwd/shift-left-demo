@@ -1,0 +1,47 @@
+name: FCS IaC Scanning for Terraform S3 bucket
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  iac-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+
+      - name: Download and Setup FCS CLI
+        id: fcs-setup
+        env:
+          FCS_CLIENT_ID: ${{ vars.FCS_CLIENT_ID }}
+          FCS_CLIENT_SECRET: ${{ secrets.FCS_CLIENT_SECRET }}
+          FALCON_REGION: ${{ vars.FALCON_REGION }}
+          FCS_BIN_PATH: /home/runner/.local/bin/fcs
+        run: |
+          chmod +x ./fcs_download_standalone.sh
+          ./fcs_download_standalone.sh
+
+      - name: Run FCS IaC Scan
+        id: fcs
+        run: |
+          export FCS_EXIT_CODE=0
+          /home/runner/.local/bin/fcs/fcs scan iac --path ./iac-scan/terraform --fail-on "critical=1,high=1,medium=1,informational=1" --report-formats "sarif" --output-path ./iac-scan-tf-results.sarif --upload --client-id "${{ vars.FCS_CLIENT_ID }}" --client-secret "${{ secrets.FCS_CLIENT_SECRET }}" --falcon-region "${{ vars.FALCON_REGION }}" || export FCS_EXIT_CODE=$?
+          echo "exit-code=$FCS_EXIT_CODE" >> $GITHUB_OUTPUT
+
+      - name: Upload IaC scan results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
+        with:
+          name: iac-scan-tf-results
+          path: ./iac-scan-tf-results.sarif
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: FCS Scan Failure
+        if: steps.fcs.outputs.exit-code != '0'
+        run: |
+          echo "::error::FCS scan has discovered misconfigurations on the Terraform code. Review FCS scan results in the Falcon console and remediate."
+          exit 1
